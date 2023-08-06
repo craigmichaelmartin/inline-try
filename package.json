@@ -1,15 +1,13 @@
 {
-  "name": "fawait",
-  "version": "2.3.0",
+  "name": "inline-try",
+  "version": "1.0.0",
   "browser": "src/index.js",
   "main": "src/index.js",
-  "types": "fawait.d.ts",
   "engines": {
     "node": ">=9"
   },
   "files": [
     "src/index.js",
-    "fawait.d.ts",
     "LICENSE"
   ],
   "scripts": {
@@ -17,8 +15,8 @@
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "test:unit:debug": "node --inspect-brk node_modules/.bin/jest --runInBand --verbose",
-    "test:format": "prettier -l \"**/*.{js,json,md}\" \"!src/**/*.spec.js\" \"!coverage/**/*\"",
-    "format": "prettier --write  \"**/*.{js,json,md}\" \"!src/**/*.spec.js\" \"!coverage/**/*\"",
+    "test:format": "prettier -l \"**/*.{js,json,md}\" \"!coverage/**/*\"",
+    "format": "prettier --write  \"**/*.{js,json,md}\" \"!coverage/**/*\"",
     "pub": "npm run test && np"
   },
   "devDependencies": {
@@ -38,9 +36,12 @@
     "trailingComma": "none"
   },
   "author": "Craig Martin",
-  "description": "A javascript library for making await more functional",
+  "description": "A javascript library for an inline try",
   "license": "MIT",
   "keywords": [
-    "javascript"
+    "javascript",
+    "error handling",
+    "try",
+    "catch"
   ]
 }
