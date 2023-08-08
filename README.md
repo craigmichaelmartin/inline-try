@@ -4,7 +4,7 @@
 npm i inline-try
 ```
 
-An inline `try` for readability, ergonomics, convience, and safety.
+A javascript library for an inline try, offering readability, ergonomics, convenience, and safety.
 
 1. Readability: `itry` results in less code, less nesting, less branching.
 2. Ergonomics: `itry` results in code that feels ergonmic, and not like you are fighting against the language (eg, with early declaring a let to avoid scoping issues in the try).
