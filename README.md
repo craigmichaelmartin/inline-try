@@ -1,61 +1,64 @@
 # `inline-try`
 
-[![Build Status](https://travis-ci.org/craigmichaelmartin/inline-try.svg?branch=master)](https://travis-ci.org/craigmichaelmartin/inline-try)
-[![codecov](https://codecov.io/gh/craigmichaelmartin/inline-try/branch/master/graph/badge.svg)](https://codecov.io/gh/craigmichaelmartin/inline-try)
-
-## What is `inline-try`?
-
-`inline-try` is a javascript library for an inline `try`.
-
-## `inline-try` With Sync Code
-
-Wrap a function with `itry` and provide error types you want to catch, and you'll receive an array you can unpack to those values, with the appropriate one defined.
-
-If error types are provided, and the function throws with one not specified, it will be thrown.
-
-Error types can be the built-ins, or your own custom error types.
-
-As a special case, if no error types are provided, all will be caught.
-
-```javascript
-const { itry } = require('inline-try');
-
-const [data, fooError] = itry(someFn, FooError);
-// If someFn returns successfully, data will be defined.
-// If someFn throws a FooError, fooError will be defined.
-// If someFn throws any other error, the itry will throw.
-
-// Another example showing any number of errors can be caught
-const [data, typeError, fooError] = await itry(someFn, TypeError, FooError);
-// If someFn returns successfully, data will be defined.
-// If someFn throws a TypeError, typeError will be defined.
-// If someFn throws a FooError, fooError will be defined.
-// If someFn throws any other error, the itry will throw.
-
-// Example showing special case of catching all errors
-const [data, error] = itry(someFn);
-// If someFn returns successfully, data will be defined.
-// If someFn throws, error will be defined.
-// The itry will never throw an error.
+```bash
+npm i inline-try
 ```
 
-Note that you do not call the function - it will be (and needs to be) invoked by `inline-try`. If your function takes parameters, you can wrap the function in an anonymous arrow function. For example:
+An inline `try` for readability, ergonomics, convience, and safety.
+
+1. Readability: `itry` results in less code, less nesting, less branching.
+2. Ergonomics: `itry` results in code that feels ergonmic, and not like you are fighting against the language (eg, with early declaring a let to avoid scoping issues in the try).
+3. Convienence: `itry` allows you to declaratively specify errors, rather than you having to tediously match them.
+4. Safety: `itry` forces you to specify which error types to catch which ensures against overcatching.
+
+Judge for yourself in the comparison ⬇️
+
+## Comparison
+
+With `inline-try`:
 
 ```javascript
-const [data, fooError] = itry(() => someFn(1, 2, 3), FooError);
+const getArticleEndpoint = async (req, res) => {
+  const [article, resultError] = await itry(getArticle(slug), ResultError);
+  if (resultError) {
+    return res.sendStatus(404);
+  }
+  await article.incrementReadCount();
+  res.json(article.serializeForAPI());
+};
 ```
 
-You can wrap any sync logic or code in a function like this.
+Without `inline-try`:
 
-## `inline-try` With Async Code
+```javascript
+const getArticleEndpoint = (req, res) => {
+  // We have to deal with scoping issues
+  let article;
+  // And deeper nesting
+  try {
+    article = await getArticle(slug);
+  } catch (error) {
+    // And remember to check the error
+    if (error instanceof ResultError) {
+      return res.sendStatus(404);
+    }
+    // And to re-throw the error if not our type
+    throw error;
+  }
+  article.incrementReadCount();
+  res.json(article.serializeForAPI());
+};
+```
+
+## Usage
+
+`inline-try` works with both async and sync code.
+
+### `inline-try` With Async Code
 
 Wrap a promise with `itry` and provide error types you want to catch, and you'll receive an array you can unpack to those values, with the appropriate one defined.
 
 If error types are provided, and the promise rejects with one not specified, it will be thrown.
-
-Error types can be the built-ins, or your own custom error types.
-
-If no error types are provided, all will be caught.
 
 ```javascript
 const { itry } = require('inline-try');
@@ -70,34 +73,67 @@ const [data, typeError, myError] = await itry(promise, TypeError, MyError);
 // If the promise rejects with a TypeError, typeError will be defined.
 // If the promise rejects with a FooError, fooError will be defined.
 // If the promise rejects with any other error, the await will throw.
+```
 
+If no error types are provided, all errors will be caught.
+
+```javascript
 const [data, error] = await itry(promise);
 // If the promise resolves, data will be defined.
 // If the promise rejects, error will be defined.
 // The await will never throw an error.
 ```
 
-Note that with async functions you await the `itry` and _do_ call the function in the `itry` parameter list (since async functions enclose success and failure data in the promise).
+Note that with async functions you await the `itry` and call the function in the `itry` parameter list (since async functions enclose success and failure data in the returned promise).
 
-## Why use `inline-try`?
+### `inline-try` With Sync Code
 
-1. Code using this pattern is more readable.
-2. Being forced to specify which types of errors you catch ensures safer code.
+Wrap a function with `itry` and provide error type(s) you want to catch, and you'll receive an array you can unpack to those values, with the appropriate one defined.
 
-Read about it: [Making Await More Functional in JavaScript](https://dev.to/craigmichaelmartin/making-await-more-functional-in-javascript-2le4)
+If error types are provided, and the function throws with one not specified, it will be thrown.
 
-TLDR contrived example:
+```javascript
+const { itry } = require('inline-try');
+
+const [data, fooError] = itry(someFn, FooError);
+// If someFn returns successfully, data will be defined.
+// If someFn throws a FooError, fooError will be defined.
+// If someFn throws any other error, the itry will throw.
+
+// Supports any amount of errors to match
+const [data, typeError, fooError] = await itry(someFn, TypeError, FooError);
+// If someFn returns successfully, data will be defined.
+// If someFn throws a TypeError, typeError will be defined.
+// If someFn throws a FooError, fooError will be defined.
+// If someFn throws any other error, the itry will throw.
+```
+
+As a special case, if no error types are provided, all errors will be caught.
+
+```javascript
+const [data, error] = itry(someFn);
+// If someFn returns successfully, data will be defined.
+// If someFn throws, error will be defined.
+// The itry will never throw an error.
+```
+
+Note that with sync code you do not call the function - it will be (and needs to be) invoked by `inline-try`. If your function takes parameters, you can wrap the function in an anonymous arrow function, or wrap any arbitrary code in a function like this. For example:
+
+```javascript
+const [data, fooError] = itry(() => someFn(1, 2, 3), FooError);
+```
+
+## Example
 
 ```javascript
 const getArticleEndpoint = async (req, res) => {
   // This code is short and readable, and is specific with errors it's catching
-  const [article, queryResultError] = await itry(getArticle(slug), QueryResultError);
-  if (queryResultsError) {
+  const [article, resultError] = await itry(getArticle(slug), ResultError);
+  if (resultError) {
     return res.sendStatus(404);
   }
   await article.incrementReadCount();
-  const json = article.serializeForAPI();
-  res.status(200).json(json);
+  res.json(article.serializeForAPI());
 };
 ```
 
@@ -140,7 +176,7 @@ const getArticleEndpoint = (req, res) => {
     return res.sendStatus(404);
   }
   article.incrementReadCount();
-  res.send(article.serializeForAPI());
+  res.json(article.serializeForAPI());
 }
 ```
 
@@ -161,7 +197,7 @@ const getArticleEndpoint = (req, res) => {
     article = await getArticle(slug);
   } catch (error) {
     // We remember to check the error
-    if (error instanceof QueryResultError) {
+    if (error instanceof ResultError) {
       // and to early return
       return res.sendStatus(404);
     }
@@ -169,7 +205,7 @@ const getArticleEndpoint = (req, res) => {
     throw error;
   }
   article.incrementReadCount();
-  res.send(article.serializeForAPI());
+  res.json(article.serializeForAPI());
 };
 ```
 
@@ -228,12 +264,7 @@ const getOne = data => tapError(() => sync.one(data), logError);
 // If the function throws an error, the error will be returned but with the error already logged.
 ```
 
-## Installation
-
-```bash
-npm i inline-try
-```
-
 ## Alternatives / Prior Art
 
 - [`fAwait`](https://github.com/craigmichaelmartin/fawait) which this was based on, but only focused on async code for promises/await (and did not also support sync functions).
+- Conception: [Making Await More Functional in JavaScript](https://dev.to/craigmichaelmartin/making-await-more-functional-in-javascript-2le4)
