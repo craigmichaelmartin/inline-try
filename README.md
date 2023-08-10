@@ -101,7 +101,7 @@ const [data, fooError] = itry(someFn, FooError);
 // If someFn throws any other error, the itry will throw.
 
 // Supports any amount of errors to match
-const [data, typeError, fooError] = await itry(someFn, TypeError, FooError);
+const [data, typeError, fooError] = itry(someFn, TypeError, FooError);
 // If someFn returns successfully, data will be defined.
 // If someFn throws a TypeError, typeError will be defined.
 // If someFn throws a FooError, fooError will be defined.
